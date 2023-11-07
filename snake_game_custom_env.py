@@ -32,21 +32,17 @@ def collision_with_self(snake_position):
         return 0
 
 
-class SnakeCustomEnv:
+class SnakeCustomEnv(gymnasium.Env):
     metadata = {"render_modes": ["human"], "render_fps": 30}
 
-    def __init__():
+    def __init__(self):
         super(SnakeCustomEnv, self).__init__()
-        # Define action and observation space
-        # They must be gym.spaces objects
-        # Example when using discrete actions:
         self.action_space = spaces.Discrete(4)
-        # Example for using image as input (channel-first; channel-last also works):
         self.observation_space = spaces.Box(
-            low=0, high=255, shape=(N_CHANNELS, HEIGHT, WIDTH), dtype=np.uint8
+            low=-500, high=500, shape=(5,), dtype=np.int32
         )
 
-    def get_observartion(self):
+    def get_observation(self):
         head_x = self.snake_head[0]
         head_y = self.snake_head[1]
 
@@ -55,7 +51,7 @@ class SnakeCustomEnv:
 
         snake_length = len(self.snake_position)
 
-        return [head_x, head_y, apple_delta_x, apple_delta_y, snake_length]
+        return np.array([head_x, head_y, apple_delta_x, apple_delta_y, snake_length])
 
     def step(self, action):
         cv2.imshow("a", self.img)
@@ -79,18 +75,18 @@ class SnakeCustomEnv:
                 3,
             )
 
-        t_end = time.time() + 0.2
+        t_end = time.time() + 0.05
         k = -1
         while time.time() < t_end:
             if k == -1:
-                k = cv2.waitKey(125)
+                k = cv2.waitKey(1)
             else:
                 continue
 
-        if action == 1:
-            self.snake_head[0] += 10
-        elif action == 0:
+        if action == 0:
             self.snake_head[0] -= 10
+        elif action == 1:
+            self.snake_head[0] += 10
         elif action == 2:
             self.snake_head[1] += 10
         elif action == 3:
@@ -123,19 +119,23 @@ class SnakeCustomEnv:
                 cv2.LINE_AA,
             )
             cv2.imshow("a", self.img)
-            self.done = True
 
-            if self.done:
-                self.reward = -10
-            else:
-                self.reward = self.score
+            self.terminated = True
+            self.truncated = True
 
-            self.observation = self.get_observation()
+        if self.terminated or self.truncated:
+            self.reward = -10
+        else:
+            self.reward = self.score
+
+        self.info = {}
+        self.observation = self.get_observation()
 
         return self.observation, self.reward, self.terminated, self.truncated, self.info
 
     def reset(self, seed=None, options=None):
-        self.done = False
+        self.terminated = False
+        self.truncated = False
         self.img = np.zeros((500, 500, 3), dtype="uint8")
         self.snake_position = [[250, 250], [240, 250], [230, 250]]
         self.apple_position = [
@@ -147,12 +147,7 @@ class SnakeCustomEnv:
         self.button_direction = 1
         self.snake_head = [250, 250]
 
+        info = {}
         self.observation = self.get_observation()
 
-        return self.observation, self.info
-
-    def render(self):
-        ...
-
-    def close(self):
-        ...
+        return np.array(self.observation), info
