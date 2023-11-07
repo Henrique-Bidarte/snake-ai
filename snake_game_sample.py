@@ -48,7 +48,7 @@ while True:
         (apple_position[0], apple_position[1]),
         (apple_position[0] + 10, apple_position[1] + 10),
         (0, 0, 255),
-        2,
+        3,
     )
     # Display Snake
     for position in snake_position:
@@ -57,15 +57,15 @@ while True:
             (position[0], position[1]),
             (position[0] + 10, position[1] + 10),
             (0, 255, 0),
-            2,
+            3,
         )
 
     # Takes step after fixed time
-    t_end = time.time() + 0.05
+    t_end = time.time() + 0.2
     k = -1
     while time.time() < t_end:
         if k == -1:
-            k = cv2.waitKey(1)
+            k = cv2.waitKey(125)
         else:
             continue
 
@@ -124,6 +124,7 @@ while True:
         )
         cv2.imshow("a", img)
         cv2.waitKey(0)
+        cv2.imwrite("D:/downloads/ii.jpg", img)
         break
 
 cv2.destroyAllWindows()
