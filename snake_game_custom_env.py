@@ -126,7 +126,7 @@ class SnakeCustomEnv(gymnasium.Env):
         if self.terminated or self.truncated:
             self.reward = -10
         else:
-            self.reward = self.score
+            self.reward = self.score * 10
 
         self.info = {}
         self.observation = self.get_observation()
