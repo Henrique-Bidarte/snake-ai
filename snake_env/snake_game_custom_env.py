@@ -8,7 +8,6 @@ from gymnasium import spaces
 
 def collision_with_apple(apple_position, score):
     apple_position = [random.randrange(1, 50) * 10, random.randrange(1, 50) * 10]
-    score += 1
     return apple_position, score
 
 
@@ -33,7 +32,7 @@ def collision_with_self(snake_position):
 
 
 class SnakeCustomEnv(gymnasium.Env):
-    metadata = {"render_modes": ["human"], "render_fps": 30}
+    metadata = {"render.modes": ["human"], "render_fps": 30}
 
     def __init__(self):
         super(SnakeCustomEnv, self).__init__()
@@ -54,9 +53,79 @@ class SnakeCustomEnv(gymnasium.Env):
         return np.array([head_x, head_y, apple_delta_x, apple_delta_y, snake_length])
 
     def step(self, action):
+        if action == 0 and self.prev_button_direction != 1:
+            self.snake_head[0] -= 10
+            self.prev_button_direction = 0
+        elif action == 1 and self.prev_button_direction != 0:
+            self.snake_head[0] += 10
+            self.prev_button_direction = 1
+        elif action == 2 and self.prev_button_direction != 3:
+            self.snake_head[1] += 10
+            self.prev_button_direction = 2
+        elif action == 3 and self.prev_button_direction != 2:
+            self.snake_head[1] -= 10
+            self.prev_button_direction = 3
+
+        apple_reward = 0
+        if self.snake_head == self.apple_position:
+            self.apple_position, self.score = collision_with_apple(
+                self.apple_position, self.score
+            )
+            self.snake_position.insert(0, list(self.snake_head))
+            apple_reward = 10000
+
+        else:
+            self.snake_position.insert(0, list(self.snake_head))
+            self.snake_position.pop()
+
+        if (
+            collision_with_boundaries(self.snake_head) == 1
+            or collision_with_self(self.snake_position) == 1
+        ):
+            self.terminated = True
+            self.truncated = True
+
+        if self.terminated or self.truncated:
+            self.reward = -1000
+        else:
+            euclidean_dist_to_apple = np.linalg.norm(
+                np.array(self.snake_head) - np.array(self.apple_position)
+            )
+            self.reward = ((250 - euclidean_dist_to_apple) + apple_reward) / 100
+            self.prev_reward = self.reward
+
+        self.info = {}
+        self.observation = self.get_observation()
+
+        return self.observation, self.reward, self.terminated, self.truncated, self.info
+
+    def reset(self, seed=None, options=None):
+        self.terminated = False
+        self.truncated = False
+        self.img = np.zeros((500, 500, 3), dtype="uint8")
+        self.snake_position = [[250, 250], [240, 250], [230, 250]]
+        self.apple_position = [
+            random.randrange(1, 50) * 10,
+            random.randrange(1, 50) * 10,
+        ]
+        self.score = 0
+        self.prev_reward = 0
+        self.prev_button_direction = 1
+        self.snake_head = [250, 250]
+
+        info = {}
+        self.observation = self.get_observation()
+
+        return np.array(self.observation), info
+
+    def render(self):
         cv2.imshow("a", self.img)
         cv2.waitKey(1)
         self.img = np.zeros((500, 500, 3), dtype="uint8")
+
+        t_end = time.time() + 0.05
+        while time.time() < t_end:
+            continue
 
         cv2.rectangle(
             self.img,
@@ -74,80 +143,3 @@ class SnakeCustomEnv(gymnasium.Env):
                 (0, 255, 0),
                 3,
             )
-
-        t_end = time.time() + 0.05
-        k = -1
-        while time.time() < t_end:
-            if k == -1:
-                k = cv2.waitKey(1)
-            else:
-                continue
-
-        if action == 0:
-            self.snake_head[0] -= 10
-        elif action == 1:
-            self.snake_head[0] += 10
-        elif action == 2:
-            self.snake_head[1] += 10
-        elif action == 3:
-            self.snake_head[1] -= 10
-
-        if self.snake_head == self.apple_position:
-            self.apple_position, self.score = collision_with_apple(
-                self.apple_position, self.score
-            )
-            self.snake_position.insert(0, list(self.snake_head))
-
-        else:
-            self.snake_position.insert(0, list(self.snake_head))
-            self.snake_position.pop()
-
-        if (
-            collision_with_boundaries(self.snake_head) == 1
-            or collision_with_self(self.snake_position) == 1
-        ):
-            font = cv2.FONT_HERSHEY_SIMPLEX
-            self.img = np.zeros((500, 500, 3), dtype="uint8")
-            cv2.putText(
-                self.img,
-                "Your Score is {}".format(self.score),
-                (140, 250),
-                font,
-                1,
-                (255, 255, 255),
-                2,
-                cv2.LINE_AA,
-            )
-            cv2.imshow("a", self.img)
-
-            self.terminated = True
-            self.truncated = True
-
-        if self.terminated or self.truncated:
-            self.reward = -10
-        else:
-            self.reward = self.score * 10
-
-        self.info = {}
-        self.observation = self.get_observation()
-
-        return self.observation, self.reward, self.terminated, self.truncated, self.info
-
-    def reset(self, seed=None, options=None):
-        self.terminated = False
-        self.truncated = False
-        self.img = np.zeros((500, 500, 3), dtype="uint8")
-        self.snake_position = [[250, 250], [240, 250], [230, 250]]
-        self.apple_position = [
-            random.randrange(1, 50) * 10,
-            random.randrange(1, 50) * 10,
-        ]
-        self.score = 0
-        self.prev_button_direction = 1
-        self.button_direction = 1
-        self.snake_head = [250, 250]
-
-        info = {}
-        self.observation = self.get_observation()
-
-        return np.array(self.observation), info

@@ -3,8 +3,8 @@ from snake_game_custom_env import SnakeCustomEnv
 
 env = SnakeCustomEnv()
 check_env(env)
-CHECK_EPISODES = 50
 
+CHECK_EPISODES = 50
 
 for episode in range(CHECK_EPISODES):
     terminated = False
