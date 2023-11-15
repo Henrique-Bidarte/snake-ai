@@ -1,3 +1,4 @@
+from collections import deque
 import gymnasium
 import numpy as np
 import random
@@ -38,7 +39,7 @@ class SnakeCustomEnv(gymnasium.Env):
         super(SnakeCustomEnv, self).__init__()
         self.action_space = spaces.Discrete(4)
         self.observation_space = spaces.Box(
-            low=-500, high=500, shape=(5,), dtype=np.int32
+            low=-500, high=500, shape=(35,), dtype=np.int32
         )
 
     def get_observation(self):
@@ -50,9 +51,17 @@ class SnakeCustomEnv(gymnasium.Env):
 
         snake_length = len(self.snake_position)
 
-        return np.array([head_x, head_y, apple_delta_x, apple_delta_y, snake_length])
+        self.past_actions = deque(maxlen=30)
+        for _ in range(30):
+            self.past_actions.append(-1)
+
+        return np.array(
+            [head_x, head_y, apple_delta_x, apple_delta_y, snake_length]
+            + list(self.past_actions)
+        )
 
     def step(self, action):
+        # self.render()
         if action == 0 and self.prev_button_direction != 1:
             self.snake_head[0] -= 10
             self.prev_button_direction = 0
@@ -86,18 +95,27 @@ class SnakeCustomEnv(gymnasium.Env):
             self.truncated = True
 
         if self.terminated or self.truncated:
-            self.reward = -1000
+            self.reward = -10
         else:
             euclidean_dist_to_apple = np.linalg.norm(
                 np.array(self.snake_head) - np.array(self.apple_position)
             )
-            self.reward = ((250 - euclidean_dist_to_apple) + apple_reward) / 100
-            self.prev_reward = self.reward
+
+            self.reward = (((250 - euclidean_dist_to_apple) + apple_reward) / 100) * (
+                self.score + 1
+            )
 
         self.info = {}
+        self.past_actions.append(action)
         self.observation = self.get_observation()
 
-        return self.observation, self.reward, self.terminated, self.truncated, self.info
+        return (
+            self.observation,
+            self.reward,
+            self.terminated,
+            self.truncated,
+            self.info,
+        )
 
     def reset(self, seed=None, options=None):
         self.terminated = False
@@ -109,7 +127,6 @@ class SnakeCustomEnv(gymnasium.Env):
             random.randrange(1, 50) * 10,
         ]
         self.score = 0
-        self.prev_reward = 0
         self.prev_button_direction = 1
         self.snake_head = [250, 250]
 
@@ -119,7 +136,7 @@ class SnakeCustomEnv(gymnasium.Env):
         return np.array(self.observation), info
 
     def render(self):
-        cv2.imshow("a", self.img)
+        cv2.imshow("Snake_AI", self.img)
         cv2.waitKey(1)
         self.img = np.zeros((500, 500, 3), dtype="uint8")
 

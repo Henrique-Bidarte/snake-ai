@@ -14,12 +14,11 @@ VERBOSE = 1
 ALGORITHM_BEST_MODEL_NAME = "snake_ai_best_model.zip"
 ALGORITHM_POLICY = "MlpPolicy"
 ALGORITHM_DEVICE = "cpu"
-ALGORITHM_TOTAL_TIMESTEPS = 1000000
+ALGORITHM_TOTAL_TIMESTEPS = 3000000
 
 ALGORITHM_RENDER_MODEL = False
-ALGORITHM_RENDER_EPISODES = 10
-ALGORITHM_RENDER_STEPS = 10000
-ALGORITHM_PREDICT_DETERMINISTIC = True
+ALGORITHM_RENDER_EPISODES = 100
+ALGORITHM_PREDICT_DETERMINISTIC = False
 ALGORITHM_RENDER_MODE = "human"
 
 ALGORITHM_NEW_MODEL = True
@@ -75,12 +74,12 @@ if ALGORITHM_RENDER_MODEL is True:
 
     for ep in range(ALGORITHM_RENDER_EPISODES):
         obs = vec_env.reset()
-        for step in range(ALGORITHM_RENDER_STEPS):
+        dones = False
+        while not dones:
             action, _ = model.predict(
                 obs, deterministic=ALGORITHM_PREDICT_DETERMINISTIC
             )
             obs, rewards, dones, info = vec_env.step(action)
-            vec_env.render()
 
     env.close()
 
