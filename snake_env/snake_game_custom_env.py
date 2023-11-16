@@ -101,9 +101,7 @@ class SnakeCustomEnv(gymnasium.Env):
                 np.array(self.snake_head) - np.array(self.apple_position)
             )
 
-            self.reward = (((250 - euclidean_dist_to_apple) + apple_reward) / 100) * (
-                self.score + 1
-            )
+            self.reward = ((250 - euclidean_dist_to_apple) + apple_reward) / 100
 
         self.info = {}
         self.past_actions.append(action)
