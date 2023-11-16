@@ -62,18 +62,37 @@ class SnakeCustomEnv(gymnasium.Env):
 
     def step(self, action):
         # self.render()
-        if action == 0 and self.prev_button_direction != 1:
-            self.snake_head[0] -= 10
-            self.prev_button_direction = 0
-        elif action == 1 and self.prev_button_direction != 0:
-            self.snake_head[0] += 10
-            self.prev_button_direction = 1
-        elif action == 2 and self.prev_button_direction != 3:
-            self.snake_head[1] += 10
-            self.prev_button_direction = 2
-        elif action == 3 and self.prev_button_direction != 2:
-            self.snake_head[1] -= 10
-            self.prev_button_direction = 3
+        if action == 0:
+            if self.prev_button_direction == 1:
+                self.snake_head[0] += 10
+                self.prev_button_direction = 1
+            else:
+                self.snake_head[0] -= 10
+                self.prev_button_direction = 0
+
+        elif action == 1:
+            if self.prev_button_direction == 0:
+                self.snake_head[0] -= 10
+                self.prev_button_direction = 0
+            else:
+                self.snake_head[0] += 10
+                self.prev_button_direction = 1
+
+        elif action == 2:
+            if self.prev_button_direction == 3:
+                self.snake_head[1] -= 10
+                self.prev_button_direction = 3
+            else:
+                self.snake_head[1] += 10
+                self.prev_button_direction = 2
+
+        elif action == 3:
+            if self.prev_button_direction == 2:
+                self.snake_head[1] += 10
+                self.prev_button_direction = 2
+            else:
+                self.snake_head[1] -= 10
+                self.prev_button_direction = 3
 
         apple_reward = 0
         if self.snake_head == self.apple_position:
