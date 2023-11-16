@@ -1,5 +1,5 @@
 import os
-from snake_env.snake_game_custom_env import SnakeCustomEnv
+from snake_env.snake_custom_env import SnakeCustomEnv
 from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3 import PPO
 

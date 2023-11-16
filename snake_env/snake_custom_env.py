@@ -39,7 +39,7 @@ class SnakeCustomEnv(gymnasium.Env):
         super(SnakeCustomEnv, self).__init__()
         self.action_space = spaces.Discrete(4)
         self.observation_space = spaces.Box(
-            low=-500, high=500, shape=(35,), dtype=np.int32
+            low=-500, high=500, shape=(55,), dtype=np.int32
         )
 
     def get_observation(self):
@@ -51,8 +51,8 @@ class SnakeCustomEnv(gymnasium.Env):
 
         snake_length = len(self.snake_position)
 
-        self.past_actions = deque(maxlen=30)
-        for _ in range(30):
+        self.past_actions = deque(maxlen=50)
+        for _ in range(50):
             self.past_actions.append(-1)
 
         return np.array(
