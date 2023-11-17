@@ -61,7 +61,6 @@ class SnakeCustomEnv(gymnasium.Env):
         )
 
     def step(self, action):
-        self.render()
         if action == 0:
             if self.prev_button_direction == 1:
                 self.snake_head[0] += 10

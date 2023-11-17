@@ -6,7 +6,6 @@ from stable_baselines3 import PPO
 CALLBACK_LOG_DIR = "\logs\\snake_ai"
 CALLBACK_CHECKPOINT_DIR = "\models\\snake_ai"
 CALLBACK_CHECK_FREQ = 10000
-CALLBACK_ON_TRAINING_MODEL = "snake_ai_training_model"
 CALLBACK_ON_TRAINING_END = "snake_ai_training_end_"
 
 VERBOSE = 1
@@ -19,7 +18,6 @@ ALGORITHM_TOTAL_TIMESTEPS = 3000000
 ALGORITHM_RENDER_MODEL = True
 ALGORITHM_RENDER_EPISODES = 100
 ALGORITHM_PREDICT_DETERMINISTIC = False
-ALGORITHM_RENDER_MODE = "human"
 
 ALGORITHM_NEW_MODEL = True
 ALGORITHM_LOAD_MODEL = False
@@ -54,12 +52,6 @@ class TrainAndLoggingCallback(BaseCallback):
 
         return True
 
-    def _on_training_end(self):
-        model_path = os.path.join(
-            self.save_path, f"{CALLBACK_ON_TRAINING_END}_{ALGORITHM_TOTAL_TIMESTEPS}"
-        )
-        self.model.save(model_path)
-
 
 env = SnakeCustomEnv()
 env.reset()
@@ -80,6 +72,7 @@ if ALGORITHM_RENDER_MODEL is True:
                 obs, deterministic=ALGORITHM_PREDICT_DETERMINISTIC
             )
             obs, rewards, dones, info = vec_env.step(action)
+            env.render()
 
     env.close()
 
