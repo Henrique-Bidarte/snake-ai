@@ -33,7 +33,7 @@ Monitoring and evaluation of the PPO agent was carried out using Tensorboard. Yo
 
 ```Tensorflow``` - https://www.tensorflow.org/tensorboard/get_started?hl=pt-br
 
-The following graph represents the smoothed average of agent rewards over 3 Million Training Steps
+The following graph represents the smoothed average of agent rewards over 3 Million Training Steps.
 
 ![image](https://github.com/Henrique-Bidarte/snake-ai/assets/134324510/14b01754-9fdd-471f-9112-e47e787e218a)
 
